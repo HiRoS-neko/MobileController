@@ -1,4 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
+using Controls;
 using TCPClient;
 using UnityEngine;
 
@@ -6,6 +10,8 @@ namespace Game
 {
     public class GameManager : MonoBehaviour
     {
+
+        public static GameManager GameManagerRef;
         private bool captureInput;
 
         private void Awake()
@@ -21,22 +27,21 @@ namespace Game
             _tcpClientBackend = new TCPClientBackend("127.0.0.1", Application.version);
         }
 
-        private void Update()
+        public void SendInput(ref PolledInput polledInput)
         {
-            if (captureInput)
+            string xmlString;
+            using (var sw = new StringWriter())
             {
-                //todo poll the buttons that could be pressed
-                
-                //todo create a json object out of the input
-                string jsonInput = "";
-                
-                //todo chack to make sure the input is different then the last one sent
-                //no point sending the same twice
-                
-                //give the tcpclient the input
-                _tcpClientBackend.SendInput(jsonInput);
+                using (var xmlWrite = XmlWriter.Create(sw))
+                {
+                    XmlSerializer writer = new XmlSerializer(typeof(PolledInput));
+                    writer.Serialize(xmlWrite, polledInput);
+                }
 
+                xmlString = sw.ToString();
             }
+
+            _tcpClientBackend.SendInput(xmlString);
         }
     }
 }
