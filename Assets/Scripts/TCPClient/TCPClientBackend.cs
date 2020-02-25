@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,25 +14,32 @@ namespace TCPClient
         Closed
     }
 
-
     public class TCPClientBackend
     {
-        private string ipAddress;
-        private string deviceID;
+        private string _ipAddress;
+        private string _deviceId;
 
+        public string SelectedInputType;
+        public string MinVersion;
+
+        private string _appVersion;
+        
+        
         public Status Status;
 
-        public string CurrentInput;
-        private bool sendInput;
+        private string _currentInput;
+        private bool _sendInput;
         private Task tcpClient;
 
 
-        public TCPClientBackend(string ipAddress)
+        public TCPClientBackend(string ipAddress, string appVersion)
         {
             Status = Status.Starting;
-            deviceID = SystemInfo.deviceUniqueIdentifier;
-            this.ipAddress = ipAddress;
+            _deviceId = SystemInfo.deviceUniqueIdentifier;
+            _ipAddress = ipAddress;
 
+            _appVersion = appVersion;
+            
             tcpClient = Task.Run(TCPClient);
         }
 
@@ -40,18 +48,29 @@ namespace TCPClient
             try
             {
                 Status = Status.Running;
-                TcpClient client = new TcpClient(ipAddress, 5953);
+                TcpClient client = new TcpClient(_ipAddress, 5953);
                 client.NoDelay = true;
 
+                if (client.Connected)
+                {
+                    using (NetworkStream stream = client.GetStream())
+                    {
+                        var connectionResponse = streamToMessage(stream);
+                        
+                        //todo verify version
+                    }
+                }
+                
+                
                 while (client.Connected)
                 {
-                    if (sendInput == true)
+                    if (_sendInput == true)
                     {
                         using (NetworkStream stream = client.GetStream())
                         {
-                            var message = messageToByteArray(CurrentInput);
+                            var message = messageToByteArray(_currentInput);
                             stream.Write(message, 0, message.Length);
-                            sendInput = false;
+                            _sendInput = false;
                         }
                     }
 
@@ -85,11 +104,32 @@ namespace TCPClient
             return completemsg;
         }
 
-        public void SendInput()
+        private static string streamToMessage(Stream stream)
         {
-            if (sendInput == false)
+            // size bytes have been fixed to 4
+            byte[] sizeBytes = new byte[4];
+            // read the content length
+            stream.Read(sizeBytes, 0, 4);
+            int messageSize = BitConverter.ToInt32(sizeBytes, 0);
+            // create a buffer of the content length size and read from the stream
+            byte[] messageBytes = new byte[messageSize];
+            stream.Read(messageBytes, 0, messageSize);
+            // convert message byte array to the message string using the encoding
+            string message = encoding.GetString(messageBytes);
+            string result = null;
+            foreach (var c in message)
+                if (c != '\0')
+                    result += c;
+ 
+            return result;
+        }
+        
+        public void SendInput(string input)
+        {
+            if (_sendInput == false)
             {
-                sendInput = true;
+                _currentInput = input;
+                _sendInput = true;
             }
         }
     }
