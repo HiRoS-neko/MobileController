@@ -15,6 +15,7 @@
       <e p="MobileController.sln" t="IncludeFlat" />
       <e p="obj" t="ExcludeRecursive" />
       <e p="Packages" t="ExcludeRecursive" />
+      <e p="Readme.md" t="Include" />
       <e p="Temp\bin" t="ExcludeRecursive" />
     </e>
   </component>

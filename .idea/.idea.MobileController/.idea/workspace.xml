@@ -17,6 +17,7 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Assets/Scripts/TCPClient/TCPClientBackend.cs" />
+        <option value="$PROJECT_DIR$/Readme.md" />
       </list>
     </option>
   </component>
@@ -58,7 +59,9 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1582644765046</updated>
-      <workItem from="1582644774114" duration="1566000" />
+      <workItem from="1582644774114" duration="1870000" />
+      <workItem from="1582646668040" duration="22000" />
+      <workItem from="1582646707971" duration="26000" />
     </task>
     <servers />
   </component>
